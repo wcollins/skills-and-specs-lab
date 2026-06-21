@@ -1,0 +1,22 @@
+# Containerlab runtime artifacts
+clab-*/
+.clab/
+*.clab.yml.bak
+authorized_keys
+
+# gridctl
+.gridctl/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Local env
+.env
+*.local
