@@ -24,7 +24,7 @@ same host as Docker and Containerlab. On Linux and WSL2, run it directly.
 
    Add that line to your shell profile so it persists.
 
-## Apply the stack and load skills
+## Apply the stack and import skills
 
 Run these from the repo root.
 
@@ -43,13 +43,18 @@ Run these from the repo root.
    The gateway listens on `http://localhost:8180`. That URL is the web UI, and
    the MCP SSE endpoint is `http://localhost:8180/sse`.
 
-3. Load the curated core skills into your local registry. They live at
-   `~/.gridctl/registry/skills/` and Gridctl serves the active ones as MCP
-   prompts.
+3. Import the curated core skills into your local registry, straight from the
+   workshop repo. They land in `~/.gridctl/registry/skills/`, and Gridctl serves
+   the active ones as MCP prompts. Because each imported skill keeps a link to
+   its source, you can pull later changes with `gridctl skill update` instead of
+   re-copying anything.
 
    ```bash
-   ./scripts/load-skills.sh
+   gridctl skill add https://github.com/wcollins/skills-and-specs-lab --path skills
    ```
+
+   No network, or want the deterministic offline path? Use the bundled copy
+   instead: `./scripts/load-skills.sh`.
 
 If a skill needs a secret later, store it in the Gridctl vault rather than in a
 file, for example `gridctl var set <KEY>`.
@@ -72,50 +77,41 @@ gridctl version
 gridctl skill list
 ```
 
-The first prints a version. The second lists the core skills you just loaded.
+The first prints a version. The second lists the core skills you just imported.
 Open `http://localhost:8180` in a browser to see the gateway web UI, and confirm
 your client now lists the gateway's MCP tools and skills.
 
-## Optional: build the Containerlab MCP server (advanced)
+## Optional: set up the Containerlab MCP server (turnkey)
 
-This is optional. You can complete both modules without it. The core skills query
-devices directly with `docker exec ... sr_cli`. The Containerlab MCP server
-(FloSch62/clab-mcp-server) adds live topology awareness and is the demo for
-least-privilege tool filtering: in `stack.yaml` it is filtered to read-only tools
-(`authenticate`, `listLabs`, `inspectLab`), so deploy and destroy never reach the
-model.
+This is optional. You can complete both modules without it — the core skills query
+devices directly with `docker exec ... sr_cli`, and Lab 1a has a non-MCP fallback.
+The Containerlab MCP server (FloSch62/clab-mcp-server) adds live topology awareness
+and is the demo for least-privilege tool filtering: in `stack.yaml` it is filtered
+to read-only tools (`authenticate`, `listLabs`, `inspectLab`), so deploy and destroy
+never reach the model.
 
-Be aware of what it requires before you start: a Go toolchain to compile it (no
-published image), plus a running Containerlab API server (hellt/clab-api) for it
-to talk to. If that is more than you want right now, skip it and continue to
-guide 05.
+It used to be a manual slog (compile a Go binary, stand up a separate Containerlab
+API server). Now it is one command:
 
-To set it up:
+```bash
+./scripts/setup-clab-mcp.sh
+```
 
-1. Build the server binary.
+The script installs a Go toolchain if you do not have one, builds the
+`clab-mcp-server` binary into `~/.local/bin`, starts a Containerlab API server on
+`:8080`, writes an env file at `~/.gridctl/clab-mcp.env`, and re-applies the stack.
+It is idempotent — safe to re-run. It uses `sudo` for the API server container and
+the auth user, so you will be prompted for your password.
 
-   ```bash
-   git clone https://github.com/FloSch62/clab-mcp-server
-   cd clab-mcp-server
-   go build -o clab-mcp-server main.go
-   ```
+When it finishes, load the env file in shells that run Gridctl (and add the line to
+your shell profile so it persists), then confirm health:
 
-2. Put the binary on `PATH`, or point Gridctl at it with an absolute path:
+```bash
+source ~/.gridctl/clab-mcp.env
+gridctl status        # the 'clab' server should be healthy
+```
 
-   ```bash
-   export CLAB_MCP_BIN="$(pwd)/clab-mcp-server"
-   ```
-
-3. Run a Containerlab API server (hellt/clab-api) reachable at `API_SERVER_URL`
-   (default `http://localhost:8080`) and set `API_USERNAME` and `API_PASSWORD`.
-   The server uses stdio transport and will fail to list labs without this API
-   server running.
-
-4. Re-apply the stack so Gridctl picks up the binary and environment:
-
-   ```bash
-   gridctl apply stack.yaml
-   ```
+Prefer to skip it for now? Continue to guide 05 — nothing downstream is blocked.
 
 ## Troubleshooting
 

@@ -46,7 +46,22 @@ process.
 This lab is standalone. It assumes only MCP basics, not prior attendance. Part 2
 (a different instructor) builds on these ideas and covers agentic loops,
 OpenClaw, and NetClaw, but you do not need Part 2 to complete Part 1, and you do
-not need any earlier session to start here.
+not need any earlier session to start here. If Part 2 ends up needing setup
+beyond Part 1, it will be listed in
+[`part-2-prerequisites.md`](part-2-prerequisites.md).
+
+## New to MCP? Where do I catch up?
+
+The lab assumes only MCP basics. If you want a quick grounding before the
+session, these are enough:
+
+- Model Context Protocol overview and concepts: <https://modelcontextprotocol.io>
+- The Containerlab MCP server this lab filters to read-only:
+  <https://github.com/FloSch62/clab-mcp-server>
+- Gridctl, the MCP gateway and skill registry:
+  <https://github.com/gridctl/gridctl>
+- The `SKILL.md` skill format the workshop uses:
+  <https://agentskills.io/specification>
 
 ## Can I use an LLM client other than Claude Code?
 

@@ -5,8 +5,9 @@
 #      allow-list is the lesson: least privilege expressed in config, not prose.
 #      Students get live topology awareness with zero deploy/destroy exposure.
 #   2. A pointer to the skills registry. Skills are NOT declared in this file;
-#      they live in ~/.gridctl/registry/skills/ (load them with
-#      ./scripts/load-skills.sh) and Gridctl serves active ones as MCP prompts.
+#      they live in ~/.gridctl/registry/skills/. Import them from git with
+#      `gridctl skill add <repo-url> --path skills` (offline fallback:
+#      ./scripts/load-skills.sh); Gridctl serves active ones as MCP prompts.
 #
 # Apply:    gridctl apply stack.yaml
 # Status:   gridctl status
@@ -17,17 +18,15 @@
 
 version: "1"
 name: skills-specs-lab
-
 network:
   name: skills-specs-lab-net
   driver: bridge
-
 mcp-servers:
-
   # --- Containerlab MCP server (read-only) -----------------------------------
   # FloSch62/clab-mcp-server: a stdio Go binary that talks to a Containerlab API
-  # server (hellt/clab-api). Build it once and put it on PATH, or set
-  # CLAB_MCP_BIN to its absolute path. See setup/04-gridctl.md.
+  # server (srl-labs/clab-api-server) on :8080. Turnkey setup (Go + binary +
+  # clab-api): ./scripts/setup-clab-mcp.sh, which also writes CLAB_MCP_BIN and the
+  # CLAB_API_* vars below into ~/.gridctl/clab-mcp.env. See setup/04-gridctl.md.
   #
   # tools: is the read-only allow-list. The server also exposes deployLab,
   # destroyLab, and execCommand; by omitting them here they never reach the
@@ -35,21 +34,35 @@ mcp-servers:
   - name: clab
     command: ["${CLAB_MCP_BIN:-clab-mcp-server}"]
     transport: stdio
-    tools: ["authenticate", "listLabs", "inspectLab"]
     env:
       API_SERVER_URL: "${CLAB_API_URL:-http://localhost:8080}"
       API_USERNAME: "${CLAB_API_USER:-admin}"
       API_PASSWORD: "${CLAB_API_PASS:-password}"
+    tools:
+      - authenticate
+      - inspectLab
+      - listLabs
 
-  # --- GitHub MCP server (post-workshop only) --------------------------------
-  # Enabled as part of the contribution flow, NOT in pre-work. The contributing
-  # skill walks you through creating a fine-grained PAT and storing it in the
-  # Gridctl vault (gridctl var set GITHUB_PERSONAL_ACCESS_TOKEN). Uncomment when
-  # you reach CONTRIBUTING.md.
-  #
-  # - name: github
-  #   image: ghcr.io/github/github-mcp-server:latest
-  #   transport: stdio
-  #   tools: ["get_file_contents", "create_branch", "create_pull_request", "search_code"]
-  #   env:
-  #     GITHUB_PERSONAL_ACCESS_TOKEN: "${var:GITHUB_PERSONAL_ACCESS_TOKEN}"
+# My client can only acces the following servesr + tools
+clients:
+  profiles:
+    claude-code:
+      servers:
+        - clab
+      tools:
+        - clab__authenticate
+        - clab__inspectLab
+        - clab__listLabs
+
+# --- GitHub MCP server (post-workshop only) --------------------------------
+# Enabled as part of the contribution flow, NOT in pre-work. The contributing
+# skill walks you through creating a fine-grained PAT and storing it in the
+# Gridctl vault (gridctl var set GITHUB_PERSONAL_ACCESS_TOKEN). Uncomment when
+# you reach CONTRIBUTING.md.
+#
+# - name: github
+#   image: ghcr.io/github/github-mcp-server:latest
+#   transport: stdio
+#   tools: ["get_file_contents", "create_branch", "create_pull_request", "search_code"]
+#   env:
+#     GITHUB_PERSONAL_ACCESS_TOKEN: "${var:GITHUB_PERSONAL_ACCESS_TOKEN}"
