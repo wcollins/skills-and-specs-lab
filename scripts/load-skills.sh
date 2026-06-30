@@ -3,8 +3,10 @@
 # gridctl serves every active SKILL.md under ~/.gridctl/registry/skills/ as an
 # MCP prompt. Skills are NOT declared in stack.yaml; they live in the registry.
 #
-# This is the deterministic, offline path used for the workshop. The git-import
-# path (gridctl skill add <repo-url>) is the post-workshop / showcase path.
+# The primary path is the git import:
+#   gridctl skill add https://github.com/wcollins/skills-and-specs-lab --path skills
+# which lets students re-sync later with `gridctl skill update`. This script is
+# the deterministic offline fallback for when GitHub is unreachable.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
