@@ -68,6 +68,24 @@ check_gridctl() {
   else bad "gridctl not installed (see setup/04-gridctl.md)"; fi
 }
 
+check_clab_mcp() {
+  header "clab MCP server (optional)"
+  local bin="${CLAB_MCP_BIN:-clab-mcp-server}"
+  local api="${CLAB_API_URL:-http://localhost:8080}"
+  local have_bin=0
+  if command -v "$bin" >/dev/null 2>&1 || [ -x "$bin" ]; then have_bin=1; fi
+  if [ "$have_bin" -eq 1 ]; then
+    ok "clab-mcp-server binary found ($bin)"
+    if curl -s -o /dev/null --max-time 2 "$api/" 2>/dev/null; then
+      ok "clab-api reachable at $api"
+    else
+      warn "clab-api not reachable at $api (re-run ./scripts/setup-clab-mcp.sh)"
+    fi
+  else
+    warn "clab MCP server not set up - optional. Lab 1a has a non-MCP fallback; set it up with ./scripts/setup-clab-mcp.sh"
+  fi
+}
+
 check_client() {
   header "MCP client"
   if command -v claude >/dev/null 2>&1; then
@@ -105,6 +123,7 @@ check_docker
 check_containerlab
 check_srl_image
 check_gridctl
+check_clab_mcp
 check_client
 check_git
 check_fabric
