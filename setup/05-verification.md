@@ -22,6 +22,8 @@ The script checks, in order:
   VM).
 - The SR Linux image (the pinned `ghcr.io/nokia/srlinux:25.10.2` tag).
 - Gridctl (installed and a recent enough version).
+- The clab MCP server (optional; warns if the binary or its clab-api server is not
+  set up, with a pointer to `./scripts/setup-clab-mcp.sh`).
 - Your MCP client (Claude Code is detected by name; any client is fine).
 - git (used only for the post-workshop contribution flow).
 - Fabric health (optional; only reports if the four nodes are already deployed).
