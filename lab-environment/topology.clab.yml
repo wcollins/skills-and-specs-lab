@@ -1,0 +1,51 @@
+---
+# Skills & Specs Lab: SR Linux spine-leaf fabric
+# Workshop: Engineering Agentic Network Operations (Part 1)
+#
+# Deploy:  sudo containerlab deploy -t topology.clab.yml
+# Destroy: sudo containerlab destroy -t topology.clab.yml
+# Inspect: sudo containerlab inspect -t topology.clab.yml
+#
+# 2 spines, 2 leaves. eBGP underlay. Spines share AS65100; each leaf has a
+# unique AS. The image tag is multi-arch (amd64 + arm64) so this runs natively
+# on Apple Silicon inside an OrbStack Linux VM.
+
+name: skills-specs-lab
+
+mgmt:
+  network: skills-specs-lab
+  ipv4-subnet: 172.20.20.0/24
+
+topology:
+  kinds:
+    nokia_srlinux:
+      type: ixr-d2l
+      image: ghcr.io/nokia/srlinux:${SRL_VERSION:=25.10.2}
+
+  nodes:
+    spine1:
+      kind: nokia_srlinux
+      mgmt-ipv4: 172.20.20.11
+      startup-config: configs/spine1.cli
+    spine2:
+      kind: nokia_srlinux
+      mgmt-ipv4: 172.20.20.12
+      startup-config: configs/spine2.cli
+    leaf1:
+      kind: nokia_srlinux
+      mgmt-ipv4: 172.20.20.21
+      startup-config: configs/leaf1.cli
+    leaf2:
+      kind: nokia_srlinux
+      mgmt-ipv4: 172.20.20.22
+      startup-config: configs/leaf2.cli
+
+  links:
+
+    # spine1 downlinks
+    - endpoints: ["spine1:e1-1", "leaf1:e1-1"]   # 10.1.1.0/30
+    - endpoints: ["spine1:e1-2", "leaf2:e1-1"]   # 10.1.2.0/30
+
+    # spine2 downlinks
+    - endpoints: ["spine2:e1-1", "leaf1:e1-2"]   # 10.2.1.0/30
+    - endpoints: ["spine2:e1-2", "leaf2:e1-2"]   # 10.2.2.0/30
